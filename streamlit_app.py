@@ -112,7 +112,10 @@ st.markdown(f"""
 st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
 
 # 4. Render the Centered Button
-_, col2, _ = st.columns([1, 1, 1])
-with col2:
-    if st.button("LOGIN TO THE MULTIVERSE"):
-        st.toast("Syncing DualSense Controller...", icon="🎮")
+# We use a custom div with flexbox to force the button to the absolute middle
+st.markdown('<div style="display: flex; justify-content: center; width: 100%; padding-top: 50px;">', unsafe_allow_html=True)
+
+if st.button("LOGIN TO THE MULTIVERSE"):
+    st.toast("Syncing DualSense Controller...", icon="🎮")
+
+st.markdown('</div>', unsafe_allow_html=True)
