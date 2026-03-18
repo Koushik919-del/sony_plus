@@ -127,7 +127,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Using columns is the most stable way to center in Streamlit
-col1, col2, col3 = st.columns([1, 0, 1])
+col1, col2, col3 = st.columns([1, -2, 1])
 
 with col2:
     if st.button("LOGIN TO THE MULTIVERSE"):
