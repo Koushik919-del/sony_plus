@@ -112,10 +112,23 @@ st.markdown(f"""
 st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
 
 # 4. Render the Centered Button
-# We use a custom div with flexbox to force the button to the absolute middle
-st.markdown('<div style="display: flex; justify-content: center; width: 100%; padding-top: 50px;">', unsafe_allow_html=True)
+# This CSS hack overrides Streamlit's internal layout to force centering
+st.markdown("""
+    <style>
+    /* This targets the specific div that Streamlit puts the button inside */
+    [data-testid="stHorizontalBlock"] {
+        align-items: center;
+    }
+    .stButton {
+        display: flex;
+        justify-content: center;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-if st.button("LOGIN TO THE MULTIVERSE"):
-    st.toast("Syncing DualSense Controller...", icon="🎮")
+# Using columns is the most stable way to center in Streamlit
+col1, col2, col3 = st.columns([1, 2, 1])
 
-st.markdown('</div>', unsafe_allow_html=True)
+with col2:
+    if st.button("LOGIN TO THE MULTIVERSE"):
+        st.toast("Syncing DualSense Controller...", icon="🎮")
