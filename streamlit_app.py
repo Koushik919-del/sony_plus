@@ -17,40 +17,7 @@ st.markdown("""
         background: radial-gradient(circle, #001d5a 0%, #000000 100%);
     }
 
-    /* THE FONT FIX: Creating a "Glitch" Text Layering Effect */
-    /* This imitates the multi-colored, off-center text of Sony Pictures Animation */
-    .sony-logo-container {
-        position: relative;
-        font-size: 160px !important; 
-        font-weight: 800;
-        text-align: center;
-        margin-top: 80px;
-        letter-spacing: -5px;
-        font-family: 'Avenir Next', 'Arial Black', sans-serif; /* Thick, bold base */
-    }
-
-    /* Layer 1: The Cyan Shadow */
-    .sony-logo-cyan {
-        color: cyan;
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        opacity: 0.7;
-        z-index: 1;
-        text-shadow: 0px 0px 20px cyan;
-    }
-
-    /* Layer 2: The Red Shadow */
-    .sony-logo-red {
-        color: #ff0055;
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        opacity: 0.7;
-        z-index: 1;
-        text-shadow: 0px 0px 20px #ff0055;
-    }
-
+    
     /* Layer 3: The Main White Text */
     .sony-logo-main {
         color: white;
