@@ -111,24 +111,33 @@ st.markdown(f"""
 # 3. Render the Subtext
 st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
 
-# 4. Render the Centered Button
-# This CSS hack overrides Streamlit's internal layout to force centering
-st.markdown("""
-    <style>
-    /* This targets the specific div that Streamlit puts the button inside */
-    [data-testid="stHorizontalBlock"] {
-        align-items: center;
-    }
-    .stButton {
-        display: flex;
-        justify-content: center;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+from streamlit_google_auth import Authenticate
 
-# Using columns is the most stable way to center in Streamlit
-col1, col2, col3 = st.columns([1, 1, 0.8])
+# 1. Setup the Authenticator (You'll get these 'secrets' from Google Cloud later)
+# For now, we'll simulate the check so you can keep building the UI
+authenticator = Authenticate(
+    secret_token=st.secrets["GOOGLE_AUTH_SECRET"],
+    cookie_name='sony_plus_auth',
+    key='auth_key',
+    cookie_expiry_days=30,
+)
 
-with col2:
-    if st.button("LOGIN TO THE MULTIVERSE"):
-        st.toast("Syncing DualSense Controller...", icon="🎮")
+# 2. The "Gatekeeper" Logic
+# Check if the user is already logged in
+is_logged_in = authenticator.check_authentification()
+
+if not is_logged_in:
+    # --- THIS IS YOUR CURRENT LANDING PAGE ---
+    st.markdown(glitch_text, unsafe_allow_html=True)
+    st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
+    
+    # Precise Button Centering
+    col1, col2, col3 = st.columns([1, 1, 0.8])
+    with col2:
+        # This triggers the Google Popup
+        authenticator.login() 
+else:
+    # --- THIS IS THE "BEYOND THE SCREEN" DASHBOARD ---
+    st.markdown("### Welcome to the Multiverse, " + st.session_state['name'])
+    st.write("Fetching your Sony Pictures library...")
+    # This is where we will put the Dr. Strange Portal and the 3D Movie Cards!
