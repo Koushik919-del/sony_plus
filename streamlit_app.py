@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_google_auth import Authenticate
 
 # Page Config
 st.set_page_config(page_title="Sony+", layout="wide", initial_sidebar_state="collapsed")
@@ -16,7 +17,6 @@ st.markdown("""
         background: radial-gradient(circle, #001d5a 0%, #000000 100%);
     }
 
-    /* THE FIX: Container must have a height to hold absolute elements */
     .sony-logo-container {
         position: relative;
         height: 220px;
@@ -25,7 +25,6 @@ st.markdown("""
         text-align: center;
     }
 
-    /* Base style for all layers */
     .glitch-layer {
         position: absolute;
         width: 100%;
@@ -70,13 +69,6 @@ st.markdown("""
         font-family: 'Roboto Mono', monospace;
     }
 
-    /* BUTTON FIX: Standard Streamlit buttons are hard to center without this specific wrapper */
-    .center-btn {
-        display: flex;
-        justify-content: center;
-        padding-top: 50px;
-    }
-
     div.stButton > button:first-child {
         background-color: transparent;
         color: white;
@@ -99,45 +91,50 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Render the Stacked Logo
-st.markdown(f"""
+# Define the HTML for the logo so it can be reused in the logic below
+logo_html = f"""
 <div class="sony-logo-container">
     <div class="glitch-layer sony-logo-cyan">Sony+</div>
     <div class="glitch-layer sony-logo-red">Sony+</div>
     <div class="glitch-layer sony-logo-main">Sony+</div>
 </div>
-""", unsafe_allow_html=True)
+"""
 
-# 3. Render the Subtext
-st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
+# --- AUTHENTICATION SETUP ---
+# Ensure your Streamlit Secrets are formatted with the [google_auth] header
+try:
+    authenticator = Authenticate(
+        secret_token=st.secrets["GOOGLE_AUTH_SECRET"],
+        client_id=st.secrets["GOOGLE_CLIENT_ID"],
+        client_secret=st.secrets["GOOGLE_CLIENT_SECRET"],
+        redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
+        cookie_name='sony_plus_auth',
+        key='auth_key',
+        cookie_expiry_days=30,
+    )
+except Exception as e:
+    st.error("Secrets Configuration Error. Check your Streamlit Cloud Settings.")
+    st.stop()
 
-from streamlit_google_auth import Authenticate
-
-# 1. Setup the Authenticator (You'll get these 'secrets' from Google Cloud later)
-# For now, we'll simulate the check so you can keep building the UI
-authenticator = Authenticate(
-    secret_token=st.secrets["GOOGLE_AUTH_SECRET"],
-    cookie_name='sony_plus_auth',
-    key='auth_key',
-    cookie_expiry_days=30,
-)
-
-# 2. The "Gatekeeper" Logic
-# Check if the user is already logged in
+# --- THE GATEKEEPER LOGIC ---
 is_logged_in = authenticator.check_authentification()
 
 if not is_logged_in:
-    # --- THIS IS YOUR CURRENT LANDING PAGE ---
-    st.markdown(glitch_text, unsafe_allow_html=True)
+    # 2. Render the Stacked Logo
+    st.markdown(logo_html, unsafe_allow_html=True)
+
+    # 3. Render the Subtext
     st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
     
-    # Precise Button Centering
-    col1, col2, col3 = st.columns([1, 1, 0.8])
+    # 4. Center and Render Login Button
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        # This triggers the Google Popup
         authenticator.login() 
+
 else:
-    # --- THIS IS THE "BEYOND THE SCREEN" DASHBOARD ---
-    st.markdown("### Welcome to the Multiverse, " + st.session_state['name'])
+    # --- INTERNAL DASHBOARD ---
+    st.markdown(f"### Welcome to the Multiverse, {st.session_state.get('name', 'User')}")
     st.write("Fetching your Sony Pictures library...")
-    # This is where we will put the Dr. Strange Portal and the 3D Movie Cards!
+    
+    if st.button("Log Out"):
+        authenticator.logout()
