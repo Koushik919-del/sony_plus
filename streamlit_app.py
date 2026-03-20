@@ -102,7 +102,7 @@ logo_html = f"""
 
 import json
 
-# 1. Create the temporary JSON file that the library is hunting for
+# Build and write client_secrets.json
 client_secrets_dict = {
     "web": {
         "client_id": st.secrets["GOOGLE_CLIENT_ID"],
@@ -114,65 +114,17 @@ client_secrets_dict = {
     }
 }
 
-# Write it to a file named 'client_secrets.json' in the app's memory
 with open("client_secrets.json", "w") as f:
     json.dump(client_secrets_dict, f)
 
-# 2. Now point the authenticator to that specific filename
+# --- SINGLE authenticator instance ---
 try:
-    # Most versions of this library want the FILENAME first
     authenticator = Authenticate(
-        "client_secrets.json", 
-        st.secrets["GOOGLE_AUTH_SECRET"],
-        "https://sony-plus.streamlit.app/_stcore/host-config",
-        cookie_name='sony_plus_auth',
-        key='auth_key'
+        secret_credentials_path="client_secrets.json",
+        cookie_name="sony_plus_auth",
+        cookie_key=st.secrets["GOOGLE_AUTH_SECRET"],
+        redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
     )
 except Exception as e:
     st.error(f"Handshake failed: {e}")
     st.stop()
-
-# --- THE FINAL HANDSHAKE (Pure Positional) ---
-try:
-    # 1. Prepare the raw data
-    cid = st.secrets["GOOGLE_CLIENT_ID"]
-    csec = st.secrets["GOOGLE_CLIENT_SECRET"]
-    asec = st.secrets["GOOGLE_AUTH_SECRET"]
-    uri = "https://sony-plus.streamlit.app/_stcore/host-config"
-
-    # 2. Drop them in the exact order the library expects:
-    # SLOT 1: ID | SLOT 2: Secret | SLOT 3: Auth Key | SLOT 4: Redirect URI
-    # No labels allowed!
-    authenticator = Authenticate(
-        cid, 
-        csec, 
-        asec, 
-        uri
-    )
-except Exception as e:
-    # If this fails, it will tell us if a slot is still missing
-    st.error(f"Handshake failed: {e}")
-    st.stop()
-
-# --- THE GATEKEEPER LOGIC ---
-is_logged_in = authenticator.check_authentification()
-
-if not is_logged_in:
-    # 2. Render the Stacked Logo
-    st.markdown(logo_html, unsafe_allow_html=True)
-
-    # 3. Render the Subtext
-    st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
-    
-    # 4. Center and Render Login Button
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        authenticator.login() 
-
-else:
-    # --- INTERNAL DASHBOARD ---
-    st.markdown(f"### Welcome to the Multiverse, {st.session_state.get('name', 'User')}")
-    st.write("Fetching your Sony Pictures library...")
-    
-    if st.button("Log Out"):
-        authenticator.logout()
