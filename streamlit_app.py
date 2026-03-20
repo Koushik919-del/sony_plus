@@ -100,29 +100,31 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP (2026 Stable Version) ---
+# --- AUTHENTICATION SETUP (Positional Method - No Labels) ---
 try:
-    # We pull the strings directly from your "Flat" secrets
-    client_id = st.secrets["GOOGLE_CLIENT_ID"]
-    client_secret = st.secrets["GOOGLE_CLIENT_SECRET"]
-    secret_key = st.secrets["GOOGLE_AUTH_SECRET"]
+    # 1. Pull values from secrets
+    cid = st.secrets["GOOGLE_CLIENT_ID"]
+    csec = st.secrets["GOOGLE_CLIENT_SECRET"]
+    asec = st.secrets["GOOGLE_AUTH_SECRET"]
+    uri = "https://sony-plus.streamlit.app/_stcore/host-config"
 
-    # The latest version of streamlit-google-auth uses 'secret_key'
-    # and requires the redirect_uri to match your Google Cloud Console exactly
+    # 2. We pass the variables IN ORDER without the names (client_id, client_secret, cookie_secret, redirect_uri)
+    # This bypasses the "Unexpected Keyword Argument" error entirely.
     authenticator = Authenticate(
-        client_id=client_id,
-        client_secret=client_secret,
-        secret_key=secret_key,
-        redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
+        cid, 
+        csec, 
+        asec, 
+        uri,
         cookie_name='sony_plus_auth',
         key='auth_key',
-        cookie_expiry_days=30,
+        cookie_expiry_days=30
     )
 except Exception as e:
-    # This will print the exact word the library is looking for if it fails
-    st.error(f"Gatekeeper Error: {e}")
-    st.info("Check if your Google Cloud Redirect URI ends in /_stcore/host-config")
+    # This will now show us the "Signature" the library expects
+    st.error(f"Handshake failed: {e}")
+    st.info("Check your requirements.txt for the exact version of streamlit-google-auth.")
     st.stop()
+
 # --- THE GATEKEEPER LOGIC ---
 is_logged_in = authenticator.check_authentification()
 
