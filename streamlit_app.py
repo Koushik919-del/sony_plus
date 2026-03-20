@@ -100,31 +100,29 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP (Version 2026 Update) ---
+# --- AUTHENTICATION SETUP (2026 Stable Version) ---
 try:
-    # Use .get to prevent the "No Key" crash while the server reboots
-    cid = st.secrets.get("GOOGLE_CLIENT_ID")
-    csec = st.secrets.get("GOOGLE_CLIENT_SECRET")
-    asec = st.secrets.get("GOOGLE_AUTH_SECRET")
+    # We pull the strings directly from your "Flat" secrets
+    client_id = st.secrets["GOOGLE_CLIENT_ID"]
+    client_secret = st.secrets["GOOGLE_CLIENT_SECRET"]
+    secret_key = st.secrets["GOOGLE_AUTH_SECRET"]
 
-    # This creates the connection using 'secret_key'
+    # The latest version of streamlit-google-auth uses 'secret_key'
+    # and requires the redirect_uri to match your Google Cloud Console exactly
     authenticator = Authenticate(
-        secret_key=asec,  # Changed from cookie_secret/secret_token
-        client_id=cid,
-        client_secret=csec,
+        client_id=client_id,
+        client_secret=client_secret,
+        secret_key=secret_key,
         redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
         cookie_name='sony_plus_auth',
         key='auth_key',
         cookie_expiry_days=30,
     )
-except TypeError as e:
-    # If 'secret_key' fails, the library might want 'token_secret'
-    st.error(f"Library Argument Error: {e}. Trying alternative...")
-    st.stop()
 except Exception as e:
-    st.error(f"General Error: {e}")
+    # This will print the exact word the library is looking for if it fails
+    st.error(f"Gatekeeper Error: {e}")
+    st.info("Check if your Google Cloud Redirect URI ends in /_stcore/host-config")
     st.stop()
-
 # --- THE GATEKEEPER LOGIC ---
 is_logged_in = authenticator.check_authentification()
 
