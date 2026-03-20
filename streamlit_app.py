@@ -128,3 +128,27 @@ try:
 except Exception as e:
     st.error(f"Handshake failed: {e}")
     st.stop()
+
+# --- THE GATEKEEPER LOGIC ---
+is_logged_in = authenticator.check_authentification()
+
+if not is_logged_in:
+    # Render the Stacked Logo
+    st.markdown(logo_html, unsafe_allow_html=True)
+
+    # Render the Subtext
+    st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
+    
+    # Center and Render Login Button
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        authenticator.login()
+
+else:
+    # --- INTERNAL DASHBOARD ---
+    st.markdown(logo_html, unsafe_allow_html=True)
+    st.markdown(f"### Welcome to the Multiverse, {st.session_state.get('name', 'User')}")
+    st.write("Fetching your Sony Pictures library...")
+    
+    if st.button("Log Out"):
+        authenticator.logout()
