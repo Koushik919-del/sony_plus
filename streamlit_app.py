@@ -100,28 +100,29 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP (Safe Flat Method) ---
+# --- AUTHENTICATION SETUP (Version 2026 Update) ---
 try:
-    # We use .get() so it doesn't crash if the key is missing for a split second during reboot
-    client_id = st.secrets.get("GOOGLE_CLIENT_ID")
-    client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET")
-    auth_secret = st.secrets.get("GOOGLE_AUTH_SECRET")
+    # Use .get to prevent the "No Key" crash while the server reboots
+    cid = st.secrets.get("GOOGLE_CLIENT_ID")
+    csec = st.secrets.get("GOOGLE_CLIENT_SECRET")
+    asec = st.secrets.get("GOOGLE_AUTH_SECRET")
 
-    if not all([client_id, client_secret, auth_secret]):
-        st.warning("Waiting for Secrets to sync... please refresh in 5 seconds.")
-        st.stop()
-
+    # This creates the connection using 'secret_key'
     authenticator = Authenticate(
-        cookie_secret=auth_secret,
-        client_id=client_id,
-        client_secret=client_secret,
+        secret_key=asec,  # Changed from cookie_secret/secret_token
+        client_id=cid,
+        client_secret=csec,
         redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
         cookie_name='sony_plus_auth',
         key='auth_key',
         cookie_expiry_days=30,
     )
+except TypeError as e:
+    # If 'secret_key' fails, the library might want 'token_secret'
+    st.error(f"Library Argument Error: {e}. Trying alternative...")
+    st.stop()
 except Exception as e:
-    st.error(f"Technical Error: {e}")
+    st.error(f"General Error: {e}")
     st.stop()
 
 # --- THE GATEKEEPER LOGIC ---
