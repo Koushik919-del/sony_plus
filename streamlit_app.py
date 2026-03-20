@@ -132,16 +132,17 @@ except Exception as e:
     st.error(f"Handshake failed: {e}")
     st.stop()
 
-# --- THE FINAL HANDSHAKE (No-Label Version) ---
+# --- THE FINAL HANDSHAKE (Pure Positional) ---
 try:
+    # 1. Prepare the raw data
     cid = st.secrets["GOOGLE_CLIENT_ID"]
     csec = st.secrets["GOOGLE_CLIENT_SECRET"]
     asec = st.secrets["GOOGLE_AUTH_SECRET"]
-    # Make sure this URI matches your Google Cloud Console exactly!
     uri = "https://sony-plus.streamlit.app/_stcore/host-config"
 
-    # We provide only the raw data strings in the exact order the library needs:
-    # 1. Client ID, 2. Client Secret, 3. Auth Secret, 4. Redirect URI
+    # 2. Drop them in the exact order the library expects:
+    # SLOT 1: ID | SLOT 2: Secret | SLOT 3: Auth Key | SLOT 4: Redirect URI
+    # No labels allowed!
     authenticator = Authenticate(
         cid, 
         csec, 
@@ -149,6 +150,7 @@ try:
         uri
     )
 except Exception as e:
+    # If this fails, it will tell us if a slot is still missing
     st.error(f"Handshake failed: {e}")
     st.stop()
 
