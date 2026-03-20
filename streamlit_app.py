@@ -1,13 +1,15 @@
 import streamlit as st
 from streamlit_google_auth import Authenticate
+import json
 
+# ⚠️ MUST BE FIRST
+st.set_page_config(page_title="Sony+", layout="wide", initial_sidebar_state="collapsed")
+
+# --- DEBUG (remove these once login works) ---
 st.write(st.experimental_get_query_params())
 st.write(dict(st.context.headers))
 
-# Page Config
-st.set_page_config(page_title="Sony+", layout="wide", initial_sidebar_state="collapsed")
-
-# 1. Custom CSS: Fonts & Positioning
+# Custom CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&family=Roboto:wght@900&display=swap');
@@ -94,8 +96,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Define the HTML for the logo so it can be reused in the logic below
-logo_html = f"""
+# Logo HTML
+logo_html = """
 <div class="sony-logo-container">
     <div class="glitch-layer sony-logo-cyan">Sony+</div>
     <div class="glitch-layer sony-logo-red">Sony+</div>
@@ -103,9 +105,7 @@ logo_html = f"""
 </div>
 """
 
-import json
-
-# Build and write client_secrets.json
+# Build client_secrets.json
 client_secrets_dict = {
     "web": {
         "client_id": st.secrets["GOOGLE_CLIENT_ID"],
@@ -113,45 +113,40 @@ client_secrets_dict = {
         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
         "token_uri": "https://oauth2.googleapis.com/token",
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "redirect_uris": ["https://sony-plus.streamlit.app/_stcore/host-config"]
+        "redirect_uris": ["https://sony-plus.streamlit.app/"]
     }
 }
 
 with open("client_secrets.json", "w") as f:
     json.dump(client_secrets_dict, f)
 
-# --- SINGLE authenticator instance ---
+# Authenticator
 try:
     authenticator = Authenticate(
         secret_credentials_path="client_secrets.json",
         cookie_name="sony_plus_auth",
         cookie_key=st.secrets["GOOGLE_AUTH_SECRET"],
-        redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
+        redirect_uri="https://sony-plus.streamlit.app/",
     )
 except Exception as e:
     st.error(f"Handshake failed: {e}")
     st.stop()
 
-# --- THE GATEKEEPER LOGIC ---
+# Gatekeeper
 is_logged_in = authenticator.check_authentification()
 
 if not is_logged_in:
-    # Render the Stacked Logo
     st.markdown(logo_html, unsafe_allow_html=True)
-
-    # Render the Subtext
     st.markdown('<p class="experience-subtext">An Experience Beyond the Screen</p>', unsafe_allow_html=True)
-    
-    # Center and Render Login Button
+
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         authenticator.login()
 
 else:
-    # --- INTERNAL DASHBOARD ---
     st.markdown(logo_html, unsafe_allow_html=True)
     st.markdown(f"### Welcome to the Multiverse, {st.session_state.get('name', 'User')}")
     st.write("Fetching your Sony Pictures library...")
-    
+
     if st.button("Log Out"):
         authenticator.logout()
