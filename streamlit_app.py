@@ -100,19 +100,28 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP (Updated for latest library version) ---
+# --- AUTHENTICATION SETUP (Safe Flat Method) ---
 try:
+    # We use .get() so it doesn't crash if the key is missing for a split second during reboot
+    client_id = st.secrets.get("GOOGLE_CLIENT_ID")
+    client_secret = st.secrets.get("GOOGLE_CLIENT_SECRET")
+    auth_secret = st.secrets.get("GOOGLE_AUTH_SECRET")
+
+    if not all([client_id, client_secret, auth_secret]):
+        st.warning("Waiting for Secrets to sync... please refresh in 5 seconds.")
+        st.stop()
+
     authenticator = Authenticate(
-        cookie_secret=st.secrets["GOOGLE_AUTH_SECRET"], # Changed from secret_token
-        client_id=st.secrets["GOOGLE_CLIENT_ID"],
-        client_secret=st.secrets["GOOGLE_CLIENT_SECRET"],
+        cookie_secret=auth_secret,
+        client_id=client_id,
+        client_secret=client_secret,
         redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
         cookie_name='sony_plus_auth',
         key='auth_key',
         cookie_expiry_days=30,
     )
 except Exception as e:
-    st.error(f"Error: {e}")
+    st.error(f"Technical Error: {e}")
     st.stop()
 
 # --- THE GATEKEEPER LOGIC ---
