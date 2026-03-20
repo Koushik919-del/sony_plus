@@ -6,7 +6,7 @@ import json
 st.set_page_config(page_title="Sony+", layout="wide", initial_sidebar_state="collapsed")
 
 # --- DEBUG (remove these once login works) ---
-st.write(st.experimental_get_query_params())
+st.write(st.query_params)
 st.write(dict(st.context.headers))
 
 # Custom CSS
