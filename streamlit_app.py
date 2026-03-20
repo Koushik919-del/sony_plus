@@ -100,29 +100,24 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP (Positional Method - No Labels) ---
+# --- THE FINAL HANDSHAKE (No-Label Version) ---
 try:
-    # 1. Pull values from secrets
     cid = st.secrets["GOOGLE_CLIENT_ID"]
     csec = st.secrets["GOOGLE_CLIENT_SECRET"]
     asec = st.secrets["GOOGLE_AUTH_SECRET"]
+    # Make sure this URI matches your Google Cloud Console exactly!
     uri = "https://sony-plus.streamlit.app/_stcore/host-config"
 
-    # 2. We pass the variables IN ORDER without the names (client_id, client_secret, cookie_secret, redirect_uri)
-    # This bypasses the "Unexpected Keyword Argument" error entirely.
+    # We provide only the raw data strings in the exact order the library needs:
+    # 1. Client ID, 2. Client Secret, 3. Auth Secret, 4. Redirect URI
     authenticator = Authenticate(
         cid, 
         csec, 
         asec, 
-        uri,
-        cookie_name='sony_plus_auth',
-        key='auth_key',
-        cookie_expiry_days=30
+        uri
     )
 except Exception as e:
-    # This will now show us the "Signature" the library expects
     st.error(f"Handshake failed: {e}")
-    st.info("Check your requirements.txt for the exact version of streamlit-google-auth.")
     st.stop()
 
 # --- THE GATEKEEPER LOGIC ---
