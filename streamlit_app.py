@@ -100,6 +100,38 @@ logo_html = f"""
 </div>
 """
 
+import json
+
+# 1. Create the temporary JSON file that the library is hunting for
+client_secrets_dict = {
+    "web": {
+        "client_id": st.secrets["GOOGLE_CLIENT_ID"],
+        "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "redirect_uris": ["https://sony-plus.streamlit.app/_stcore/host-config"]
+    }
+}
+
+# Write it to a file named 'client_secrets.json' in the app's memory
+with open("client_secrets.json", "w") as f:
+    json.dump(client_secrets_dict, f)
+
+# 2. Now point the authenticator to that specific filename
+try:
+    # Most versions of this library want the FILENAME first
+    authenticator = Authenticate(
+        "client_secrets.json", 
+        st.secrets["GOOGLE_AUTH_SECRET"],
+        "https://sony-plus.streamlit.app/_stcore/host-config",
+        cookie_name='sony_plus_auth',
+        key='auth_key'
+    )
+except Exception as e:
+    st.error(f"Handshake failed: {e}")
+    st.stop()
+
 # --- THE FINAL HANDSHAKE (No-Label Version) ---
 try:
     cid = st.secrets["GOOGLE_CLIENT_ID"]
