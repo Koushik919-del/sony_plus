@@ -100,20 +100,20 @@ logo_html = f"""
 </div>
 """
 
-# --- AUTHENTICATION SETUP ---
-# Ensure your Streamlit Secrets are formatted with the [google_auth] header
+# --- AUTHENTICATION SETUP (Flat Method) ---
 try:
     authenticator = Authenticate(
-        secret_token=st.secrets["GOOGLE_AUTH_SECRET"],
-        client_id=st.secrets["GOOGLE_CLIENT_ID"],
-        client_secret=st.secrets["GOOGLE_CLIENT_SECRET"],
+        secret_token=st.secrets.get("GOOGLE_AUTH_SECRET"),
+        client_id=st.secrets.get("GOOGLE_CLIENT_ID"),
+        client_secret=st.secrets.get("GOOGLE_CLIENT_SECRET"),
         redirect_uri="https://sony-plus.streamlit.app/_stcore/host-config",
         cookie_name='sony_plus_auth',
         key='auth_key',
         cookie_expiry_days=30,
     )
 except Exception as e:
-    st.error("Secrets Configuration Error. Check your Streamlit Cloud Settings.")
+    # This will now tell you EXACTLY which secret is missing
+    st.error(f"Error: {e}")
     st.stop()
 
 # --- THE GATEKEEPER LOGIC ---
