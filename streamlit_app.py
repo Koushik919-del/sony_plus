@@ -1,6 +1,9 @@
 import streamlit as st
 from streamlit_google_auth import Authenticate
 
+st.write(st.experimental_get_query_params())
+st.write(dict(st.context.headers))
+
 # Page Config
 st.set_page_config(page_title="Sony+", layout="wide", initial_sidebar_state="collapsed")
 
